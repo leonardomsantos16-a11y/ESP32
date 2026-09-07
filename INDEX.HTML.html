@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Control Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard-container">
+    <header class="header">
+      <div class="badge"><span class="pulse-icon"></span> SISTEMA ONLINE</div>
+      <h1>ESP32</h1>
+      <p>Painel de Controle de Iluminação</p>
+    </header>
+
+    <main class="control-card">
+      <div class="led-visualizer">
+        <div id="led-ring" class="led-ring off">
+          <div class="led-core"></div>
+        </div>
+        <div class="status-info">
+          <span class="status-label">STATUS DO LED</span>
+          <h2 id="status-text">CARREGANDO...</h2>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <button class="btn btn-power-on" onclick="setLedStatus(1)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+          </svg>
+          <span>LIGAR (PISCAR)</span>
+        </button>
+
+        <button class="btn btn-power-off" onclick="setLedStatus(0)">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+          </svg>
+          <span>DESLIGAR</span>
+        </button>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <span>Firebase Realtime Database • Sincronizado</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
