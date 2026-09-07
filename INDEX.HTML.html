@@ -4,54 +4,232 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ESP32 Control Hub</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: #080c14;
+      background-image: radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.15), transparent 70%);
+      color: #f1f5f9;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 380px;
+      background: rgba(18, 24, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 32px 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 2px;
+    }
+
+    header p {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-top: 4px;
+      margin-bottom: 28px;
+    }
+
+    .status-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .led-ring {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      background: #0f172a;
+      border: 3px solid #334155;
+    }
+
+    .led-core {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #334155;
+      transition: all 0.3s ease;
+    }
+
+    /* Estado LIGADO (1) */
+    .led-ring.on {
+      border-color: #00ff88;
+      box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+    }
+    .led-ring.on .led-core {
+      background: #00ff88;
+      box-shadow: 0 0 20px #00ff88;
+      animation: blink 0.4s infinite alternate;
+    }
+
+    /* Estado DESLIGADO (0) */
+    .led-ring.off {
+      border-color: #ff3366;
+      box-shadow: 0 0 15px rgba(255, 51, 102, 0.2);
+    }
+    .led-ring.off .led-core {
+      background: #ff3366;
+    }
+
+    @keyframes blink {
+      0% { opacity: 0.2; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1.05); }
+    }
+
+    .status-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #94a3b8;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-on {
+      background: linear-gradient(135deg, #00ff88, #00b862);
+      color: #022c16;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn-on:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+    }
+
+    .btn-off {
+      background: linear-gradient(135deg, #ff3366, #c71542);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(255, 51, 102, 0.3);
+    }
+
+    .btn-off:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 51, 102, 0.5);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+  </style>
 </head>
 <body>
-  <div class="dashboard-container">
-    <header class="header">
-      <div class="badge"><span class="pulse-icon"></span> SISTEMA ONLINE</div>
+
+  <div class="container">
+    <header>
       <h1>ESP32</h1>
-      <p>Painel de Controle de Iluminação</p>
+      <p>Painel de Controle Remoto</p>
     </header>
 
-    <main class="control-card">
-      <div class="led-visualizer">
-        <div id="led-ring" class="led-ring off">
-          <div class="led-core"></div>
-        </div>
-        <div class="status-info">
-          <span class="status-label">STATUS DO LED</span>
-          <h2 id="status-text">CARREGANDO...</h2>
-        </div>
+    <div class="status-card">
+      <div id="led-ring" class="led-ring">
+        <div class="led-core"></div>
       </div>
+      <div id="status-text" class="status-text">Carregando...</div>
+    </div>
 
-      <div class="controls-grid">
-        <button class="btn btn-power-on" onclick="setLedStatus(1)">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-            <line x1="12" y1="2" x2="12" y2="12"></line>
-          </svg>
-          <span>LIGAR (PISCAR)</span>
-        </button>
-
-        <button class="btn btn-power-off" onclick="setLedStatus(0)">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-          </svg>
-          <span>DESLIGAR</span>
-        </button>
-      </div>
-    </main>
-
-    <footer class="footer">
-      <span>Firebase Realtime Database • Sincronizado</span>
-    </footer>
+    <div class="btn-group">
+      <button class="btn btn-on" onclick="setLedStatus(1)">LIGAR (PISCAR)</button>
+      <button class="btn btn-off" onclick="setLedStatus(0)">DESLIGAR</button>
+    </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const DATABASE_URL = "https://esp32-11d28-default-rtdb.firebaseio.com/";
+    const DATABASE_SECRET = "pXBRUOmqlAZFr6rXlWJMKK7QtXd5m7LR2QbH1BOH";
+
+    async function setLedStatus(value) {
+      const url = `${DATABASE_URL}led_status.json?auth=${DATABASE_SECRET}`;
+      try {
+        const response = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(value)
+        });
+        if (response.ok) {
+          updateUI(value);
+        } else {
+          alert("Erro na conexão com o Firebase.");
+        }
+      } catch (error) {
+        alert("Erro ao enviar dados.");
+      }
+    }
+
+    function updateUI(status) {
+      const statusText = document.getElementById("status-text");
+      const ledRing = document.getElementById("led-ring");
+
+      if (status === 1) {
+        statusText.innerText = "LIGADO (1)";
+        statusText.style.color = "#00ff88";
+        ledRing.className = "led-ring on";
+      } else {
+        statusText.innerText = "DESLIGADO (0)";
+        statusText.style.color = "#ff3366";
+        ledRing.className = "led-ring off";
+      }
+    }
+
+    async function fetchCurrentStatus() {
+      const url = `${DATABASE_URL}led_status.json?auth=${DATABASE_SECRET}`;
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          updateUI(data);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar estado inicial:", error);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchCurrentStatus);
+  </script>
+
 </body>
 </html>
